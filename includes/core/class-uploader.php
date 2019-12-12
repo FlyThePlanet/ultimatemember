@@ -1176,6 +1176,7 @@ if ( ! class_exists( 'um\core\Uploader' ) ) {
 		 */
 		function move_temporary_files( $user_id, $files, $move_only = false ) {
 			$new_files = array();
+			$old_files = array();
 
 			$user_basedir = UM()->uploader()->get_upload_user_base_dir( $user_id, true );
 
@@ -1234,9 +1235,9 @@ if ( ! class_exists( 'um\core\Uploader' ) ) {
 
 						$file = $user_basedir. DIRECTORY_SEPARATOR . $new_filename;
 
-						$new_files[ $key ] = $new_filename;
-
 						if ( rename( $temp_file_path, $file ) ) {
+							$new_files[ $key ] = $new_filename;
+							$old_files[ $key ] = get_user_meta( $user_id, $key, true );
 							update_user_meta( $user_id, $key, $new_filename );
 
 							$file_info = get_transient( "um_{$filename}" );
@@ -1256,39 +1257,42 @@ if ( ! class_exists( 'um\core\Uploader' ) ) {
 			}
 
 			//remove user old files
-			$this->remove_unused_uploads( $user_id, $new_files );
+			$this->remove_unused_uploads( $user_id, $new_files, $old_files );
 		}
 
 
 		/**
 		 * Clean user temp uploads
 		 *
-		 * @param int $user_id
+		 * @param int   $user_id
 		 * @param array $new_files
+		 * @param array $old_files
 		 */
-		function remove_unused_uploads( $user_id, $new_files ) {
+		function remove_unused_uploads( $user_id, $new_files, $old_files = array() ) {
 			um_fetch_user( $user_id );
 			$user_meta_keys = UM()->user()->profile;
 
-			$_array = array();
-			if ( ! empty( UM()->builtin()->custom_fields ) ) {
+			$filenames = (array) $new_files;
+			if ( !empty( UM()->builtin()->custom_fields ) ) {
 				foreach ( UM()->builtin()->custom_fields as $_field ) {
-					if ( $_field['type'] == 'file' && ! empty( $user_meta_keys[ $_field['metakey'] ] ) ) {
-						$_array[ $_field['metakey'] ] = $user_meta_keys[ $_field['metakey'] ];
+					if ( $_field['type'] == 'file' && !empty( $user_meta_keys[$_field['metakey']] ) ) {
+						$filenames[$_field['metakey']] = $user_meta_keys[$_field['metakey']];
 					}
 				}
 			}
-			$_array = array_merge( $_array, $new_files );
 
-			$files = glob( UM()->uploader()->get_upload_base_dir() . um_user( 'ID' ) . DIRECTORY_SEPARATOR . '*', GLOB_BRACE );
-			$error = array();
-			if ( file_exists( UM()->uploader()->get_upload_base_dir() . um_user( 'ID' ) . DIRECTORY_SEPARATOR ) && $files && isset( $_array ) && is_array( $_array ) ) {
+			if ( file_exists( UM()->uploader()->get_upload_base_dir() . um_user( 'ID' ) . DIRECTORY_SEPARATOR ) ) {
+				$files = glob( UM()->uploader()->get_upload_base_dir() . um_user( 'ID' ) . DIRECTORY_SEPARATOR . '*', GLOB_BRACE );
+			}
+			if ( !empty( $files ) ) {
 				foreach ( $files as $file ) {
 					$str = basename( $file );
 
-					if ( ! strstr( $str, 'profile_photo' ) && ! strstr( $str, 'cover_photo' ) &&
-					     ! strstr( $str, 'stream_photo' ) && ! preg_grep( '/' . $str . '/', $_array ) ) {
-						$error[] = $str;
+					if ( preg_grep( '/' . basename( $file ) . '/i', $old_files ) ) {
+						unlink( $file );
+					}
+					if ( !strstr( $str, 'profile_photo' ) && !strstr( $str, 'cover_photo' ) &&
+						!strstr( $str, 'stream_photo' ) && !preg_grep( '/' . $str . '/', $filenames ) ) {
 						unlink( $file );
 					}
 				}

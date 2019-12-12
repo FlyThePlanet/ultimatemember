@@ -2512,7 +2512,7 @@ if ( ! class_exists( 'um\core\Fields' ) ) {
 								$image_info = um_user( $data['metakey']."_metadata" );
 							}
 
-							if ( isset( $this->set_mode ) && $this->set_mode == 'register' ) {
+							if ( ( isset( $this->set_mode ) && $this->set_mode == 'register' ) || file_exists( UM()->uploader()->get_core_temp_dir() . DIRECTORY_SEPARATOR . $field_value ) ) {
 								$imgValue = UM()->uploader()->get_core_temp_url() . "/" . $this->field_value( $key, $default, $data );
 							} else {
 								$imgValue = UM()->files()->get_download_link( $this->set_id, $key, um_user( 'ID' ) );
@@ -2586,19 +2586,17 @@ if ( ! class_exists( 'um\core\Fields' ) ) {
 							$file_field_name = $file_info['original_name'];
 						}
 
-						if ( isset( $this->set_mode ) && 'register' == $this->set_mode ) {
-							$file_url = UM()->uploader()->get_core_temp_url() . DIRECTORY_SEPARATOR . $this->field_value( $key, $default, $data );
-							$file_dir = UM()->uploader()->get_core_temp_dir() . DIRECTORY_SEPARATOR . $this->field_value( $key, $default, $data );
-						} else {
+						if ( ( isset( $this->set_mode ) && 'register' == $this->set_mode ) || file_exists( UM()->uploader()->get_core_temp_dir() . DIRECTORY_SEPARATOR . $file_field_value ) ) {
+							$file_url = UM()->uploader()->get_core_temp_url() . DIRECTORY_SEPARATOR . $file_field_value;
+							$file_dir = UM()->uploader()->get_core_temp_dir() . DIRECTORY_SEPARATOR . $file_field_value;
+						}  else {
 							$file_url = UM()->files()->get_download_link( $this->set_id, $key, um_user( 'ID' ) );
 							$file_dir = UM()->uploader()->get_upload_base_dir() . um_user( 'ID' ) . DIRECTORY_SEPARATOR . $this->field_value( $key, $default, $data );
+						}
 
-							if ( ! file_exists( $file_dir ) ) {
-								if ( is_multisite() ) {
-									//multisite fix for old customers
-									$file_dir = str_replace( DIRECTORY_SEPARATOR . 'sites' . DIRECTORY_SEPARATOR . get_current_blog_id() . DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR, $file_dir );
-								}
-							}
+						if ( ! file_exists( $file_dir ) && is_multisite() ) {
+							//multisite fix for old customers
+							$file_dir = str_replace( DIRECTORY_SEPARATOR . 'sites' . DIRECTORY_SEPARATOR . get_current_blog_id() . DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR, $file_dir );
 						}
 
 						if ( file_exists( $file_dir ) ) {

@@ -470,7 +470,6 @@ jQuery(document).ready(function() {
 		var me = jQuery(this);
 		var parent_option = me.data('um-parent');
 		var um_ajax_source = me.data('um-ajax-source');
-		var original_value = me.val();
 
 		me.attr('data-um-init-field', true );
 
@@ -491,6 +490,12 @@ jQuery(document).ready(function() {
 
 			if ( typeof arr_key != 'undefined' && arr_key != '' && typeof um_select_options_cache[ arr_key ] != 'object' ) {
 
+				if( typeof( me.um_wait ) === 'undefined' || me.um_wait === false ){
+					me.um_wait = true;
+				}else{
+					return;
+				}
+
 				jQuery.ajax({
 					url: wp.ajax.settings.url,
 					type: 'post',
@@ -506,24 +511,26 @@ jQuery(document).ready(function() {
 					},
 					success: function( data ){
 						if ( data.status == 'success' && arr_key != '' ) {
+							um_select_options_cache[ arr_key ] = data;
 							um_field_populate_child_options( me, data, arr_key );
 						}
 
 						if ( typeof data.debug !== 'undefined' ) {
 							console.log( data );
 						}
+
+						me.um_wait = false;
 					},
 					error: function( e ){
 						console.log( e );
 					}
 				});
 
-
 			}
 
 			if ( typeof arr_key != 'undefined' && arr_key != '' && typeof um_select_options_cache[ arr_key ] == 'object' ) {
 				var data = um_select_options_cache[ arr_key ];
-				um_field_populate_child_options( me, data, arr_key );
+				setTimeout( um_field_populate_child_options, 10, me, data, arr_key );
 			}
 
 			if ( typeof arr_key != 'undefined' || arr_key == '' ) {
@@ -545,9 +552,8 @@ jQuery(document).ready(function() {
 	 */
 	function um_field_populate_child_options( me, data, arr_key, arr_items ) {
 		var directory = me.parents('.um-directory');
-		var parent_option = me.data('um-parent');
 		var child_name = me.attr('name');
-		var parent_dom = jQuery('select[name="'+parent_option+'"]');
+		
 		me.find('option[value!=""]').remove();
 
 		if ( ! me.hasClass('um-child-option-disabled') ) {
@@ -579,7 +585,7 @@ jQuery(document).ready(function() {
 			});
 
 			var current_filter_val = um_get_data_for_directory( directory, 'filter_' + child_name );
-			if ( typeof current_filter_val != 'undefined' ) {
+			if ( typeof current_filter_val !== 'undefined' ) {
 				current_filter_val = current_filter_val.split('||');
 
 				var temp_filter_val = [];
@@ -618,7 +624,6 @@ jQuery(document).ready(function() {
 				me.attr('disabled','disabled');
 			}
 		}
-		um_select_options_cache[ arr_key ] = data;
 
 	}
 

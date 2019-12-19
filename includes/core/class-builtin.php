@@ -1131,8 +1131,11 @@ if ( ! class_exists( 'um\core\Builtin' ) ) {
 					'required' => 0,
 					'public' => 1,
 					'editable' => 1,
-					'default' => 'No',
-					'options' => array( 'No' => __('No','ultimate-member'), 'Yes' => __('Yes','ultimate-member') ),
+					'default'  => UM()->options()->get('account_hide_in_directory_default') ? UM()->options()->get('account_hide_in_directory_default') : 'No',
+					'options' => array( 
+							'No'  => __('No','ultimate-member'),
+							'Yes' => __('Yes','ultimate-member')
+					),
 					'account_only' => true,
 					'required_opt' => array( 'members_page', 1 ),
 				),

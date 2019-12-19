@@ -60,6 +60,11 @@ function um_after_insert_user( $user_id, $args ) {
 	}
     UM()->user()->set_status( um_user( 'status' ) );
 
+	// Setting "Hide my profile from directory" for a new member
+	if ( UM()->options()->get( 'account_hide_in_directory' ) ) {
+		update_user_meta( $user_id, 'hide_in_members', UM()->options()->get( 'account_hide_in_directory_default' ) );
+	}
+
 	/**
 	 * UM hook
 	 *

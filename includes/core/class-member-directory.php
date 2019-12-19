@@ -930,7 +930,7 @@ if ( ! class_exists( 'um\core\Member_Directory' ) ) {
 
 
 		/**
-		 *
+		 * Filter users in the Member Directory by setting "Hide my profile from directory"
 		 */
 		function hide_by_account_settings() {
 			if ( ! UM()->options()->get( 'account_hide_in_directory' ) ) {
@@ -941,29 +941,36 @@ if ( ! class_exists( 'um\core\Member_Directory' ) ) {
 				return;
 			}
 
-			$meta_query = array(
-				"relation"  => "OR",
-				array(
-					'key'       => 'hide_in_members',
-					'value'     => '',
-					'compare'   => 'NOT EXISTS'
-				),
-				array(
-					"relation"  => "AND",
+			if( 'Yes' === UM()->options()->get( 'account_hide_in_directory_default' ) ){
+				$meta_query = array(
+						'key'   => 'hide_in_members',
+						'value' => array( 'No', __( 'No', 'ultimate-member' ) )
+				);
+			} else {
+				$meta_query = array(
+					"relation"  => "OR",
 					array(
 						'key'       => 'hide_in_members',
-						'value'     => __( 'Yes', 'ultimate-member' ),
-						'compare'   => 'NOT LIKE'
+						'value'     => '',
+						'compare'   => 'NOT EXISTS'
 					),
 					array(
-						'key'       => 'hide_in_members',
-						'value'     => 'Yes',
-						'compare'   => 'NOT LIKE'
+						"relation"  => "AND",
+						array(
+							'key'       => 'hide_in_members',
+							'value'     => __( 'Yes', 'ultimate-member' ),
+							'compare'   => 'NOT LIKE'
+						),
+						array(
+							'key'       => 'hide_in_members',
+							'value'     => 'Yes',
+							'compare'   => 'NOT LIKE'
+						),
 					),
-				),
-			);
+				);
+			}
 
-			$this->query_args['meta_query'] = array_merge( $this->query_args['meta_query'], array( $meta_query ) );
+			$this->query_args['meta_query']['hide_in_members'] = $meta_query;
 		}
 
 

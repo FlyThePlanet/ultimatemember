@@ -267,9 +267,11 @@ function um_submit_account_details( $args ) {
 		$changes[ $k ] = $v;
 	}
 
-	if ( isset( $changes['hide_in_members'] ) && ( $changes['hide_in_members'] == __( 'No', 'ultimate-member' ) || $changes['hide_in_members'] == 'No' ) ) {
-		delete_user_meta( $user_id, 'hide_in_members' );
-		unset( $changes['hide_in_members'] );
+	// Save account setting "Hide my profile from directory"
+	if ( isset( $changes['hide_in_members'] ) && is_array( $changes['hide_in_members'] ) ) {
+		$changes['hide_in_members'] = current( $changes['hide_in_members'] );
+	} elseif ( empty( $changes['hide_in_members'] ) && UM()->options()->get( 'account_hide_in_directory' ) ) {
+		$changes['hide_in_members'] = UM()->options()->get('account_hide_in_directory_default') ? UM()->options()->get('account_hide_in_directory_default') : 'No';
 	}
 
 	/**

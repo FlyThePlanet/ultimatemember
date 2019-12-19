@@ -544,16 +544,29 @@ if ( ! class_exists( 'um\admin\core\Admin_Settings' ) ) {
 									'tooltip'   => __( 'Password is required to save account data.', 'ultimate-member' ),
 								),
 								array(
-									'id'       		=> 'account_hide_in_directory',
-									'type'     		=> 'checkbox',
-									'label'   		=> __( 'Allow users to hide their profiles from directory','ultimate-member' ),
-									'tooltip' 	=> __('Whether to allow users changing their profile visibility from member directory in account page.','ultimate-member'),
+									'id'      => 'account_require_strongpass',
+									'type'    => 'checkbox',
+									'label'   => __( 'Require a strong password?','ultimate-member' ),
+									'tooltip' => __('Enable or disable a strong password rules on account page / change password tab','ultimate-member'),
 								),
 								array(
-									'id'       		=> 'account_require_strongpass',
-									'type'     		=> 'checkbox',
-									'label'   		=> __( 'Require a strong password?','ultimate-member' ),
-									'tooltip' 	=> __('Enable or disable a strong password rules on account page / change password tab','ultimate-member'),
+									'id'      => 'account_hide_in_directory',
+									'type'    => 'checkbox',
+									'label'   => __( 'Allow users to hide their profiles from directory','ultimate-member' ),
+									'tooltip' => __('Whether to allow users changing their profile visibility from member directory in account page.','ultimate-member'),
+								),
+								array(
+									'id'          => 'account_hide_in_directory_default',
+									'type'        => 'select',
+									'label'       => __( 'Hide profiles from directory by default', 'ultimate-member' ),
+									'tooltip'     => __( 'Set default value for the \'Hide my profile from directory\' option', 'ultimate-member' ),
+									'default'     => 'No',
+									'options'     => array(
+										'No'  => __( 'No', 'ultimate-member' ),
+										'Yes' => __( 'Yes', 'ultimate-member' )
+									),
+									'size'        => 'small',
+									'conditional' => array( 'account_hide_in_directory', '=', '1' ),
 								)
 							)
 						),
